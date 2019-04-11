@@ -3,9 +3,13 @@ package com.test.mqtt;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.Future;
 import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.mqtt.MqttServer;
+import io.vertx.reactivex.mqtt.MqttTopicSubscription;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MQTTServer extends AbstractVerticle {
 
@@ -37,6 +41,38 @@ public class MQTTServer extends AbstractVerticle {
                 }
 
             }).publishReleaseHandler(endpoint::publishComplete);
+
+
+            endpoint.subscribeHandler(subscribe -> {
+                List<MqttQoS> grantedQosLevels = new ArrayList<>();
+                for (MqttTopicSubscription s: subscribe.topicSubscriptions()) {
+                    System.out.println("Subscription for " + s.topicName() + " with QoS " + s.qualityOfService());
+                    grantedQosLevels.add(s.qualityOfService());
+                }
+                endpoint.subscribeAcknowledge(subscribe.messageId(), grantedQosLevels);
+            });
+
+            vertx.setPeriodic(1000, v -> {
+                endpoint.publish("hello",
+                        Buffer.buffer("Hello from the Vert.x MQTT server"),
+                        MqttQoS.EXACTLY_ONCE,
+                        false,
+                        false);
+            });
+
+            endpoint.publishAcknowledgeHandler(messageId -> {
+
+                System.out.println("Received ack for message = " +  messageId);
+
+            }).publishReceivedHandler(messageId -> {
+
+                endpoint.publishRelease(messageId);
+
+            }).publishCompletionHandler(messageId -> {
+
+                System.out.println("Received ack for message = " +  messageId);
+            });
+            // ack the subscriptions request
 
             // accept connection from the remote client
             endpoint.accept(false);
