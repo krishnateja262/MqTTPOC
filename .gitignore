@@ -1,0 +1,17 @@
+# Logs
+logs
+*.log
+
+# Optional npm cache directory
+.idea/
+
+# Optional REPL history
+.idea
+
+target/
+
+*.iml
+
+.DS_Store
+
+nohup.out
