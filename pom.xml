@@ -67,7 +67,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.rapido.App</mainClass>
+                            <mainClass>com.test.App</mainClass>
                         </manifest>
                     </archive>
 
